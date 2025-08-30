@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Hub - Remote Music System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            color: #ce93d8;
+            border-bottom: 2px solid #ce93d8;
+            padding-bottom: 10px;
+        }
+
+        .midi-interface {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 3px;
+            margin-bottom: 20px;
+            height: 80px;
+        }
+
+        .midi-key {
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            font-size: 11px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .midi-key.white {
+            background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+            border: 1px solid #ccc;
+            color: #333;
+        }
+
+        .midi-key.black {
+            background: linear-gradient(to bottom, #333, #000);
+            color: #fff;
+            height: 50px;
+            margin-top: 30px;
+        }
+
+        .midi-key:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .midi-key.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* wearable panel styles */
+        .wearable-panel {
+            text-align: center;
+        }
+
+        .haptic-indicator {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ab47bc, #8e24aa);
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(171, 71, 188, 0.4);
+        }
+
+        .haptic-indicator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(171, 71, 188, 0.6);
+        }
+
+        .haptic-indicator.active {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .control-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #8e24aa, #7b1fa2);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .status-panel {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-online { background: #4caf50; }
+        .status-offline { background: #f44336; }
+        .status-pending { background: #ff9800; }
+
+        .communication-flow {
+            grid-column: span 2;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .flow-step {
+            background: linear-gradient(45deg, #ba68c8, #9c27b0);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 140px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .latency-monitor {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .latency-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .latency-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9c27b0, #ba68c8);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .session-participants {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .participant {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ab47bc, #8e24aa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .audio-visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 60px;
+            gap: 3px;
+            margin: 20px 0;
+        }
+
+        .audio-bar {
+            width: 8px;
+            background: linear-gradient(to top, #ce93d8, #ba68c8);
+            border-radius: 4px;
+            animation: audioWave 0.8s infinite ease-in-out;
+        }
+
+        @keyframes audioWave {
+            0%, 100% { height: 10px; }
+            50% { height: 50px; }
+        }
+
+        .audio-bar:nth-child(2) { animation-delay: 0.1s; }
+        .audio-bar:nth-child(3) { animation-delay: 0.2s; }
+        .audio-bar:nth-child(4) { animation-delay: 0.3s; }
+        .audio-bar:nth-child(5) { animation-delay: 0.4s; }
+        .audio-bar:nth-child(6) { animation-delay: 0.5s; }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .communication-flow {
+                grid-column: span 1;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                transform: translateX(50%);
+                top: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Remote Music Communication System</h1>
+            <p class="subtitle">Innovative system for remote musical improvisation with haptic and acoustic feedback</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- MIDI Interface Section -->
+            <div class="section">
+                <h2>MIDI Interface</h2>
+                <div class="midi-interface">
+                    <button class="midi-key white" data-note="C4">C</button>
+                    <button class="midi-key black" data-note="C#4">C#</button>
+                    <button class="midi-key white" data-note="D4">D</button>
+                    <button class="midi-key black" data-note="D#4">D#</button>
+                    <button class="midi-key white" data-note="E4">E</button>
+                    <button class="midi-key white" data-note="F4">F</button>
+                    <button class="midi-key black" data-note="F#4">F#</button>
+                    <button class="midi-key white" data-note="G4">G</button>
+                </div>
+                
+                <div class="audio-visualizer">
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                </div>
+
+                <div class="status-panel">
+                    <div class="status-item">
+                        <span>MIDI Input:</span>
+                        <span><span class="status-indicator status-online"></span> Active</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Audio Processing:</span>
+                        <span><span class="status-indicator status-online"></span> Running</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Pattern Detection:</span>
+                        <span><span class="status-indicator status-pending"></span> Analyzing</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wearable Device Section -->
+            <div class="section wearable-panel">
+                <h2>Wearable Device</h2>
+                <div class="haptic-indicator" id="hapticDevice">
+                    HAPTIC
+                </div>
+                
+                <div class="control-panel">
+                    <button class="control-btn" onclick="toggleHaptic()">Toggle Haptic</button>
+                    <button class="control-btn" onclick="calibrateDevice()">Calibrate</button>
+                    <button class="control-btn" onclick="syncDevice()">Sync Device</button>
+                </div>
+
+                <div class="status-panel">
+                    <div class="status-item">
+                        <span>Bluetooth:</span>
+                        <span><span class="status-indicator status-online"></span> Connected</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Battery:</span>
+                        <span>87%</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Haptic Patterns:</span>
+                        <span id="patternCount">12 loaded</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Flow Section -->
+        <div class="section communication-flow">
+            <h2>System Communication Flow</h2>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <strong>Musical Instrument</strong><br>
+                    <small>MIDI Input</small>
+                </div>
+                <div class="flow-step">
+                    <strong>Local App</strong><br>
+                    <small>Signal Processing</small>
+                </div>
+                <div class="flow-step">
+                    <strong>Cloud Server</strong><br>
+                    <small>Synchronization</small>
+                </div>
+                <div class="flow-step">
+                    <strong>Remote App</strong><br>
+                    <small>Signal Distribution</small>
+                </div>
+                <div class="flow-step">
+                    <strong>Wearable + Audio</strong><br>
+                    <small>Haptic + Sound Output</small>
+                </div>
+            </div>
+
+            <div class="latency-monitor">
+                <h3>Network Latency Monitor</h3>
+                <div class="latency-bar">
+                    <div class="latency-fill" id="latencyBar" style="width: 15%;"></div>
+                </div>
+                <p>Current Latency: <span id="latencyValue">15ms</span> (Target: &lt;20ms)</p>
+            </div>
+
+            <div class="session-participants">
+                <h3>Active Session Participants</h3>
+                <div class="participant">
+                    <div class="participant-avatar">M1</div>
+                    <div>
+                        <strong>Musician 1</strong><br>
+                        <small>Piano - Status: <span class="status-indicator status-online"></span> Active</small>
+                    </div>
+                </div>
+                <div class="participant">
+                    <div class="participant-avatar">M2</div>
+                    <div>
+                        <strong>Musician 2</strong><br>
+                        <small>Guitar - Status: <span class="status-indicator status-pending"></span> Connecting</small>
+                    </div>
+                </div>
+                <div class="participant">
+                    <div class="participant-avatar">M3</div>
+                    <div>
+                        <strong>Musician 3</strong><br>
+                        <small>Drums - Status: <span class="status-indicator status-offline"></span> Offline</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: refactor this mess later
+        class RemoteMusicSystem {
+            constructor() {
+                this.isHapticActive = false;
+                this.connectedDevices = new Map();
+                this.currentLatency = 15; // seems good enough for now
+                this.audioContext = null;
+                this.midiAccess = null;
+                this.patternLibrary = [];
+                
+                this.initializeSystem();
+                this.startLatencySimulation();
+                this.loadHapticPatterns();
+            }
+
+            async initializeSystem() {
+                try {
+                    // Web Audio API setup - hope this works on all browsers
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // MIDI stuff - only works if user has MIDI device
+                    if (navigator.requestMIDIAccess) {
+                        this.midiAccess = await navigator.requestMIDIAccess();
+                        this.setupMIDIListeners();
+                    } else {
+                        console.log('No MIDI support, using virtual keys only');
+                    }
+                    
+                    console.log('System started successfully');
+                } catch (error) {
+                    // fallback to simulation mode
+                    console.warn('Real MIDI not available, running in demo mode');
+                }
+            }
+
+            setupMIDIListeners() {
+                if (this.midiAccess) {
+                    for (let input of this.midiAccess.inputs.values()) {
+                        input.onmidimessage = (event) => {
+                            this.processMIDIMessage(event.data);
+                        };
+                    }
+                }
+            }
+
+            processMIDIMessage(data) {
+                const command = data[0];
+                const note = data[1];
+                const velocity = data[2];
+                
+                // check if it's a note on event
+                if (command === 144 && velocity > 0) { 
+                    this.triggerHapticFeedback(note, velocity);
+                    this.updateAudioVisualization();
+                    this.broadcastToRemoteUsers(note, velocity);
+                }
+                // TODO: handle note off events properly
+            }
+
+            triggerHapticFeedback(note, velocity) {
+                if (!this.isHapticActive) return;
+                
+                const hapticDevice = document.getElementById('hapticDevice');
+                const pattern = this.getHapticPattern(note, velocity);
+                
+                hapticDevice.classList.add('active');
+                setTimeout(() => {
+                    hapticDevice.classList.remove('active');
+                }, pattern.duration);
+
+                // Simulate haptic vibration through visual feedback
+                this.simulateVibration(pattern);
+            }
+
+            getHapticPattern(note, velocity) {
+                const basePattern = {
+                    duration: Math.max(200, velocity * 4),
+                    intensity: velocity / 127,
+                    frequency: this.noteToFrequency(note)
+                };
+                
+                // Customize pattern based on musical context
+                if (note < 60) { // Lower notes
+                    basePattern.type = 'pulse';
+                    basePattern.repetitions = 2;
+                } else if (note > 84) { // Higher notes
+                    basePattern.type = 'sharp';
+                    basePattern.duration = basePattern.duration * 0.6;
+                } else { // Middle range
+                    basePattern.type = 'smooth';
+                }
+                
+                return basePattern;
+            }
+
+            simulateVibration(pattern) {
+                const device = document.getElementById('hapticDevice');
+                const originalText = device.textContent;
+                
+                switch (pattern.type) {
+                    case 'pulse':
+                        device.textContent = 'PULSE';
+                        break;
+                    case 'sharp':
+                        device.textContent = 'SHARP';
+                        break;
+                    case 'smooth':
+                        device.textContent = 'SMOOTH';
+                        break;
+                }
+                
+                setTimeout(() => {
+                    device.textContent = originalText;
+                }, pattern.duration);
+            }
+
+            noteToFrequency(note) {
+                return 440 * Math.pow(2, (note - 69) / 12);
+            }
+
+            updateAudioVisualization() {
+                const bars = document.querySelectorAll('.audio-bar');
+                bars.forEach((bar, index) => {
+                    const height = Math.random() * 50 + 10;
+                    bar.style.height = height + 'px';
+                    bar.style.animationDelay = (index * 0.1) + 's';
+                });
+            }
+
+            broadcastToRemoteUsers(note, velocity) {
+                // Simulate network communication
+                const data = {
+                    type: 'note_event',
+                    note: note,
+                    velocity: velocity,
+                    timestamp: Date.now(),
+                    userId: 'user_1'
+                };
+                
+                // In real implementation, this would be sent to the synchronization server
+                console.log('Broadcasting to remote users:', data);
+                
+                // Simulate network latency effect
+                this.simulateNetworkLatency();
+            }
+
+            simulateNetworkLatency() {
+                const latency = Math.random() * 15 + 10; // 10-25ms
+                this.currentLatency = latency;
+                
+                const latencyBar = document.getElementById('latencyBar');
+                const latencyValue = document.getElementById('latencyValue');
+                
+                const percentage = Math.min((latency / 30) * 100, 100);
+                latencyBar.style.width = percentage + '%';
+                latencyValue.textContent = Math.round(latency) + 'ms';
+                
+                // Color coding based on latency
+                if (latency < 20) {
+                    latencyBar.style.background = 'linear-gradient(90deg, #9c27b0, #ba68c8)';
+                } else if (latency < 30) {
+                    latencyBar.style.background = 'linear-gradient(90deg, #ff9800, #ffc107)';
+                } else {
+                    latencyBar.style.background = 'linear-gradient(90deg, #f44336, #e57373)';
+                }
+            }
+
+            startLatencySimulation() {
+                setInterval(() => {
+                    this.simulateNetworkLatency();
+                }, 1000);
+            }
+
+            loadHapticPatterns() {
+                // Simulate loading predefined haptic patterns
+                this.patternLibrary = [
+                    { name: 'Bass Drum', pattern: [1, 0, 0, 1] },
+                    { name: 'Snare Hit', pattern: [0, 1, 1, 0] },
+                    { name: 'Hi-Hat', pattern: [1, 1, 0, 1] },
+                    { name: 'Piano Attack', pattern: [1, 0, 1, 0] },
+                    { name: 'Guitar Strum', pattern: [1, 1, 1, 0] },
+                    { name: 'String Bow', pattern: [1, 0, 0, 0] },
+                    { name: 'Brass Accent', pattern: [0, 0, 1, 1] },
+                    { name: 'Percussion Roll', pattern: [1, 1, 1, 1] },
+                    { name: 'Chord Change', pattern: [1, 0, 1, 1] },
+                    { name: 'Melody Peak', pattern: [0, 1, 0, 1] },
+                    { name: 'Rhythm Sync', pattern: [1, 0, 0, 0] },
+                    { name: 'Harmony Lock', pattern: [0, 0, 0, 1] }
+                ];
+                
+                document.getElementById('patternCount').textContent = this.patternLibrary.length + ' loaded';
+            }
+
+            toggleHaptic() {
+                this.isHapticActive = !this.isHapticActive;
+                const device = document.getElementById('hapticDevice');
+                
+                if (this.isHapticActive) {
+                    device.style.background = 'radial-gradient(circle, #4caf50, #388e3c)';
+                    device.textContent = 'ACTIVE';
+                } else {
+                    device.style.background = 'radial-gradient(circle, #ab47bc, #8e24aa)';
+                    device.textContent = 'HAPTIC';
+                }
+            }
+
+            calibrateDevice() {
+                const device = document.getElementById('hapticDevice');
+                device.textContent = 'CALIBRATING';
+                device.style.background = 'radial-gradient(circle, #ff9800, #f57c00)';
+                
+                // Simulate calibration process
+                setTimeout(() => {
+                    device.textContent = 'CALIBRATED';
+                    setTimeout(() => {
+                        device.textContent = 'HAPTIC';
+                        device.style.background = 'radial-gradient(circle, #ab47bc, #8e24aa)';
+                    }, 1000);
+                }, 2000);
+            }
+
+            syncDevice() {
+                const device = document.getElementById('hapticDevice');
+                device.textContent = 'SYNCING';
+                device.style.background = 'radial-gradient(circle, #9c27b0, #7b1fa2)';
+                
+                // Simulate sync process
+                setTimeout(() => {
+                    device.textContent = 'SYNCHRONIZED';
+                    setTimeout(() => {
+                        device.textContent = 'HAPTIC';
+                        device.style.background = 'radial-gradient(circle, #ab47bc, #8e24aa)';
+                    }, 1000);
+                }, 1500);
+            }
+        }
+
+        // Global functions for UI interaction
+        function toggleHaptic() {
+            window.musicSystem.toggleHaptic();
+        }
+
+        function calibrateDevice() {
+            window.musicSystem.calibrateDevice();
+        }
+
+        function syncDevice() {
+            window.musicSystem.syncDevice();
+        }
+
+        // MIDI Key interaction
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the system
+            window.musicSystem = new RemoteMusicSystem();
+            
+            // Set up MIDI key interactions
+            const midiKeys = document.querySelectorAll('.midi-key');
+            midiKeys.forEach(key => {
+                key.addEventListener('mousedown', function() {
+                    this.classList.add('active');
+                    const note = this.dataset.note;
+                    const velocity = 100; // Simulated velocity
+                    
+                    // Convert note to MIDI number for processing
+                    const noteMap = {
+                        'C4': 60, 'C#4': 61, 'D4': 62, 'D#4': 63,
+                        'E4': 64, 'F4': 65, 'F#4': 66, 'G4': 67
+                    };
+                    
+                    if (noteMap[note]) {
+                        window.musicSystem.processMIDIMessage([144, noteMap[note], velocity]);
+                    }
+                });
+                
+                key.addEventListener('mouseup', function() {
+                    this.classList.remove('active');
+                });
+                
+                key.addEventListener('mouseleave', function() {
+                    this.classList.remove('active');
+                });
+            });
+            
+            // Keyboard support for MIDI keys
+            document.addEventListener('keydown', function(e) {
+                const keyMap = {
+                    'q': 'C4', '2': 'C#4', 'w': 'D4', '3': 'D#4',
+                    'e': 'E4', 'r': 'F4', '5': 'F#4', 't': 'G4'
+                };
+                
+                if (keyMap[e.key.toLowerCase()]) {
+                    const button = document.querySelector(`[data-note="${keyMap[e.key.toLowerCase()]}"]`);
+                    if (button && !button.classList.contains('active')) {
+                        button.classList.add('active');
+                        button.click();
+                    }
+                }
+            });
+            
+            document.addEventListener('keyup', function(e) {
+                const keyMap = {
+                    'q': 'C4', '2': 'C#4', 'w': 'D4', '3': 'D#4',
+                    'e': 'E4', 'r': 'F4', '5': 'F#4', 't': 'G4'
+                };
+                
+                if (keyMap[e.key.toLowerCase()]) {
+                    const button = document.querySelector(`[data-note="${keyMap[e.key.toLowerCase()]}"]`);
+                    if (button) {
+                        button.classList.remove('active');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
