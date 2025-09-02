@@ -1,6 +1,6 @@
-# Auditory and Tactile Interactions 🎶🤝
+# Auditory and Tactile Interactions Exam 🎶🤝
 
-**Collaborative Acoustic–Tactile Interface for Remote Jam Sessions**
+# Collaborative Acoustic–Tactile Interface for Remote Jam Sessions
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Haptics](https://img.shields.io/badge/wearable-haptics-orange)]()
@@ -45,14 +45,3 @@ Dimensions: `350mm × 200mm`
 - **Machine Learning**: TensorFlow Lite, librosa/essentia  
 
 ---
-
-## 🚀 Installation  
-
-```bash
-# Clone repository
-git clone https://github.com/your-username/remote-jam.git
-cd remote-jam
-
-# Install dependencies
-npm install   # for backend
-flutter pub get   # for mobile app
